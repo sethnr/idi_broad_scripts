@@ -8,3 +8,7 @@ running, eg, `python myScriptName.py --help` should give you details of individu
 various vcf-mangling and reporting scripts. All python scripts are py2.7 unless otherwise stated
 * copyAnnotationToVCF.py
 * blockSummariseVCF.py
+
+## hacks
+unfinished, use-once, or generally hacky scripts. All the caveats above and then a thousand more. 
+* getSNPFlank.py - parse flanking seq from positions and fasta file 
