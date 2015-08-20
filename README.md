@@ -6,5 +6,5 @@ running, eg, `python myScriptName.py --help` should give you details of individu
 
 ## vcf
 various vcf-mangling and reporting scripts. All python scripts are py2.7 unless otherwise stated
-###copyAnnotationToVCF.py
-###blockSummariseVCF.py
+* copyAnnotationToVCF.py
+* blockSummariseVCF.py
