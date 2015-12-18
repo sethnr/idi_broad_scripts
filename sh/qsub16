@@ -1,0 +1,27 @@
+#!/bin/bash
+
+JOBNAME=$1
+shift
+
+if [ ! -d "./out" ]; then
+  mkdir out
+fi
+
+# echo qsub -N $JOBNAME -o out/ -e out/  \
+#      -l h_vmem=8.0G -l m_core=4 -l h_rt=12:00:00 \
+#      -q long \
+#     "$@"
+# qsub -N $JOBNAME -o out/ -e out/  \
+#      -l h_vmem=8.0G -l m_core=4 -l h_rt=12:00:00 \
+#      -q long \
+#     "$@"
+echo qsub -N $JOBNAME -o out/ -j y -e out/  \
+      -l h_vmem=16.0G -l h_rt=12:00:00 \
+      -q gaag -pe smp_pe 4 \
+      -V -cwd \
+     "$@"
+qsub -N $JOBNAME -o out/ -j y -e out/  \
+      -l h_vmem=16.0G -l h_rt=12:00:00 \
+      -q gaag -pe smp_pe 4 \
+      -V -cwd \
+     "$@"

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+JOBNAME=$1
+shift
+
+if [ ! -d "./out" ]; then
+  mkdir out
+fi
+
+echo bsub -J $JOBNAME -o out/${JOBNAME}.oe -e out/${JOBNAME}.oe \
+     -R 'select[mem>40000] rusage[mem=40000]  span[ptile=4]' \
+     -M 40000 -n 4 -q forest \
+     "$@"
+bsub -J $JOBNAME -o out/${JOBNAME}.oe -e out/${JOBNAME}.oe \
+     -R 'select[mem>40000] rusage[mem=40000]  span[ptile=4]' \
+     -M 40000 -n 4 -q forest \
+     "$@"
