@@ -36,7 +36,13 @@ for rec in reader1:
 #    rec.samples = None
     newSamples = list()
     GTindex=rec.FORMAT.split(":").index("GT")
-    GPindex=rec.FORMAT.split(":").index("GP")
+#    print >>sys.stderr, rec.FORMAT.split(":")
+    if "GP" in rec.FORMAT.split(":"):
+        GPindex=rec.FORMAT.split(":").index("GP")
+    elif "PL" in rec.FORMAT.split(":"):
+        GPindex=rec.FORMAT.split(":").index("PL")
+    else:
+        GPindex=-1
     format = rec.FORMAT.split(":")
     makeCallData = vcf.model.make_calldata_tuple(tuple(rec.FORMAT.split(":")))
     
@@ -50,16 +56,17 @@ for rec in reader1:
             dipAlleles = dipGT.split('/')
             callData[GTindex]
             callData[GTindex]=str(dipAlleles[0])
-        
-        dipGP=callData[GPindex]
-        if dipGP is not None:
-            if len(dipGP) > 3:
-                print >>sys.stderr, rec.CHROM,rec.POS,len(rec.ALT),dipGP 
-            newGP = list()
-            for i in range(0,len(rec.ALT)+1):
-                iiIndex=(i*(i+1)/2)+i
-                newGP += [dipGP[iiIndex]]
-            callData[GPindex]=newGP
+
+        if GPindex > -1:
+            dipGP=callData[GPindex]
+            if dipGP is not None:
+                if len(dipGP) > 3:
+                    print >>sys.stderr, rec.CHROM,rec.POS,len(rec.ALT),dipGP 
+                newGP = list()
+                for i in range(0,len(rec.ALT)+1):
+                    iiIndex=(i*(i+1)/2)+i
+                    newGP += [dipGP[iiIndex]]
+                callData[GPindex]=newGP
 
         newCallString = ""
 

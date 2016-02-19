@@ -41,5 +41,6 @@ for rec in reader1:
             print "\t.",
     if args.info is not None:
         print "\t",
-        print rec.INFO[args.info][0],
+        if args.info in rec.INFO:
+            print rec.INFO[args.info][0],
     print ""

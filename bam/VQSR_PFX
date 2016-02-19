@@ -1,0 +1,100 @@
+#!/bin/bash
+
+#NB GATK3.4 requires Java 1.8
+
+LOCIFILE="NULL"
+BAMSFILE="NULL"
+MEM=8
+OUTFILE="GATK_out.vcf"
+VARONLY="-out_mode EMIT_ALL_SITES"
+MODE="DISCOVERY"
+PICARD=/seq/software/picard/1.99/bin
+GATK=/humgen/gsa-hpprojects/GATK/bin/GenomeAnalysisTK-3.5-0-g36282e4
+#GenomeAnalysisTK-3.4-0-g7e26428
+
+
+#DEFAULTS
+REF=/seq/plasmodium/sredmond/refs/Pf3D7_v3.fasta
+PFX=/seq/plasmodium/sredmond/pfdisco/analyses/pfx_parents/3D7_DD2_parents.vcf.gz
+
+
+while getopts "R:o:M:P:V:" opt; do
+  case $opt in
+    R) REF=${OPTARG};;
+    P) PFX=${OPTARG};;
+    o) OUTFILE=$OPTARG;;
+    M) MEM=$OPTARG;;
+    V) INPUT=$OPTARG;;
+   \?) echo "Invalid option: -$OPTARG" >&2 ;;
+  esac
+done
+
+#check ref.dict file is present, otherwise create
+if [ ! -f ${REF//fasta/dict} ]
+  then
+  java -jar ${PICARD}/CreateSequenceDictionary.jar R=${REF} O=${REF//fasta/dict}
+fi
+
+
+echo java -jar ${GATK}/GenomeAnalysisTK.jar \
+    -T VariantRecalibrator \
+    -R ${REF} \
+    -input ${INPUT} \
+    -resource:PFX,known=false,training=true,truth=true,prior=15.0 $PFX \
+    -an DP \
+    -an QD \
+    -an FS \
+    -an SOR \
+    -an MQ \
+    -an MQRankSum \
+    -an ReadPosRankSum \
+    -mode BOTH \
+    -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+    -recalFile ${OUTFILE}.recal \
+    -tranchesFile ${OUTFILE}.tranches \
+    -rscriptFile ${OUTFILE}_plots.R 
+
+java -jar ${GATK}/GenomeAnalysisTK.jar \
+    -T VariantRecalibrator \
+    -R ${REF} \
+    -input ${INPUT} \
+    -resource:PFX,known=false,training=true,truth=true,prior=15.0 $PFX \
+    -an DP \
+    -an QD \
+    -an FS \
+    -an SOR \
+    -an MQ \
+    -an MQRankSum \
+    -an ReadPosRankSum \
+    -mode BOTH \
+    -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0 \
+    -recalFile ${OUTFILE}.recal \
+    -tranchesFile ${OUTFILE}.tranches \
+    -rscriptFile ${OUTFILE}_plots.R 
+
+
+if [ $? -ne 0 ]; then
+    echo "VQSR stage 1 failed"
+    exit 1
+fi
+
+echo "APPLYING RECALIBRATION"
+echo java -jar ${GATK}/GenomeAnalysisTK.jar \
+    -T ApplyRecalibration \
+    -R ${REF} \
+    -input ${INPUT} \
+    -mode BOTH \
+    --ts_filter_level 99.0 \
+    -recalFile ${OUTFILE}.recal \
+    -tranchesFile ${OUTFILE}.tranches \
+    -o ${OUTFILE}.vcf
+
+java -jar $GATK/GenomeAnalysisTK.jar \
+    -T ApplyRecalibration \
+    -R ${REF} \
+    -input ${INPUT} \
+    -mode BOTH \
+    --ts_filter_level 99.0 \
+    -recalFile ${OUTFILE}.recal \
+    -tranchesFile ${OUTFILE}.tranches \
+    -o ${OUTFILE}.vcf
