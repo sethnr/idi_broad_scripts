@@ -1,0 +1,21 @@
+#!/bin/bash
+
+JOBNAME=$1
+shift
+
+if [ ! -d "./out" ]; then
+  mkdir out
+fi
+
+# -l h_rt=12:00:00
+
+echo qsub -N $JOBNAME -j y -o out/ -e out/  \
+      -l m_mem_free=3.0G -l m_core=1 \
+      -q long -P gscid \
+      -V -b y -cwd \
+     "$@"
+qsub -N $JOBNAME -j y -o out/ -e out/  \
+      -l m_mem_free=3.0G -l m_core=1 \
+      -q long -P gscid \
+      -V -b y -cwd \
+     "$@"

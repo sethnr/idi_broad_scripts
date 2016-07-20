@@ -1,0 +1,26 @@
+#!/bin/bash
+
+JOBNAME=$1
+shift
+JOBFILE=$1
+shift
+
+JOBCT=`wc -l $JOBFILE | cut -f1 -d\  `
+
+if [ ! -d "./out" ]; then
+  mkdir out
+fi
+
+SCRIPT=$(readlink -f $0)
+SCRIPTPATH=`dirname $SCRIPT`
+
+echo qsub -N $JOBNAME -o out/ -j y -e out/  \
+      -l m_mem_free=8.0G -l h_rt=12:00:00 \
+      -P gscid -l m_core=4 -q long \
+      -V -cwd -t 1-${JOBCT} \
+      ${SCRIPTPATH}/runJobInArray $JOBFILE
+qsub -N $JOBNAME -o out/ -j y -e out/  \
+      -l m_mem_free=8.0G -l h_rt=12:00:00 \
+      -P gscid -l m_core=4 -q long \
+      -V -cwd -t 1-${JOBCT} \
+      ${SCRIPTPATH}/runJobInArray $JOBFILE
